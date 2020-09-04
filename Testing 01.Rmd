@@ -1,0 +1,18 @@
+---
+title: "Testing 01"
+author: "Mengyao"
+date: "2020/9/4"
+output: html_document
+---
+# LEVEL 1 HEAD
+HELLO WORLD!
+
+## LEVL 2 HEAD
+hello again!
+
+```{r}
+lmy=3
+asd=4
+lmy+asd
+```
+Goodbye!
