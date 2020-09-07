@@ -42,3 +42,8 @@ hh_data
 write_csv(hh_data, "household data.csv")
 ```
 
+# 6. check area-level variables
+```{r}
+area_variable_2010 <- load_variables(2010, "sf1")
+```
+
