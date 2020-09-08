@@ -1,0 +1,60 @@
+---
+title: "Assignment 01"
+author: "Mengyao"
+date: "2020/9/5"
+output: 
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+---
+# 1. Load tidycensus, tidyverse, dplyr, httr, knitr
+```{r message=FALSE}
+library(tidycensus)
+library(tidyverse)
+library(dplyr)
+library(httr)
+library(knitr)
+```
+
+# 2. Load household-level data from the 1-year American Community Survey Sample from 2018
+```{r}
+household_variable_2018 <- pums_variables %>%
+  distinct(year, survey, var_code, var_label, data_type, level) %>%
+  filter(level == "housing", year == 2018, survey == "acs1")
+```
+
+# 3. Fix connection problem
+## I am constantly getting an error message "Failed to connect to api.census.gov". I have searched online for different methods. This chunk solves my problem.
+```{r results='hide'}
+ set_config(
+     use_proxy(url="127.0.0.1", port=7890)
+ )
+ httr::GET("https://www.census.gov/")
+```
+
+# 4. Choose 5 variables:
+## I want to do a household-level analysis. After looking through the variables available in household_variable_2018, I 've chosen the following five variables:
+
+     - Food stamp (FS) (categorical)
+     - Laptop (LAPTOP) (categorical)
+     - Household income (HINCP) (continuous)
+     - Number of own children (NOC) (continuous)
+     - Property Value (VALP) (continuous)
+     
+## I want my sample to include all households in New York State.
+```{r results= "hide"}
+household_data <- get_pums(variables = c("FS", "LAPTOP", "HINCP", "NOC", "VALP"),
+                           state = "NY",
+                           year = 2018,
+                           survey = "acs1",
+                           recode = TRUE) 
+```
+
+# 5. Select and present columns from household_data dataframe
+## This dataset includes 196,967 households. First 10 rows are presented here as a formatted table.
+```{r}
+hh_data <- select(household_data, "FS", "LAPTOP", "HINCP", "NOC", "VALP")
+knitr::kable(hh_data[1:10,])
+```
+
