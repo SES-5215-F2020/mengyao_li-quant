@@ -18,6 +18,7 @@ library(knitr)
 ```
 
 # 2. Load household-level data from the 1-year American Community Survey Sample from 2018
+I want to do a household-level analysis. 
 ```{r}
 household_variable_2018 <- pums_variables %>%
   distinct(year, survey, var_code, var_label, data_type, level) %>%
@@ -25,7 +26,7 @@ household_variable_2018 <- pums_variables %>%
 ```
 
 # 3. Fix connection problem
-## I am constantly getting an error message "Failed to connect to api.census.gov". I have searched online for different methods. This chunk solves my problem.
+I am constantly getting an error message "Failed to connect to api.census.gov". I have searched online for different methods. This chunk solves my problem.
 ```{r results='hide'}
  set_config(
      use_proxy(url="127.0.0.1", port=7890)
@@ -34,7 +35,7 @@ household_variable_2018 <- pums_variables %>%
 ```
 
 # 4. Choose 5 variables:
-## I want to do a household-level analysis. After looking through the variables available in household_variable_2018, I 've chosen the following five variables:
+After looking through the variables available in household_variable_2018, I have chosen the following five variables:
 
      - Food stamp (FS) (categorical)
      - Laptop (LAPTOP) (categorical)
@@ -42,7 +43,8 @@ household_variable_2018 <- pums_variables %>%
      - Number of own children (NOC) (continuous)
      - Property Value (VALP) (continuous)
      
-## I want my sample to include all households in New York State.
+I want my sample to include all households in New York State. 
+Through those data, I would like to explore the relationship between household income and property value, number of children, food stamps, and laptop. The following questions can find an answer through this analysis: "Do richer families spend more on housing?", "Do they tend to have more children?", "Does more children means more laptop?", "Is there a correlation between income and food stamp used?", etc.   
 ```{r results= "hide"}
 household_data <- get_pums(variables = c("FS", "LAPTOP", "HINCP", "NOC", "VALP"),
                            state = "NY",
@@ -52,9 +54,14 @@ household_data <- get_pums(variables = c("FS", "LAPTOP", "HINCP", "NOC", "VALP")
 ```
 
 # 5. Select and present columns from household_data dataframe
-## This dataset includes 196,967 households. First 10 rows are presented here as a formatted table.
+This dataset includes 196,967 households. The first ten rows are presented here as a formatted table.
 ```{r}
 hh_data <- select(household_data, "FS", "LAPTOP", "HINCP", "NOC", "VALP")
 knitr::kable(hh_data[1:10,])
+```
+
+# 6. Saving data
+```{r}
+write_csv(hh_data, "household data_01.csv")
 ```
 
