@@ -1,0 +1,227 @@
+---
+title: "Assignment 02"
+author: "Mengyao"
+date: "2020/9/11"
+output: 
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+---
+
+# 1. Load packages
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+# 2. Load household-level data
+This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.
+
+the following five variables are included:
+     - When structure first built (bd_year)(categorical)
+     - Household language (household_language) (categorical)
+     - Household income (HINCP) (continuous)
+     - First mortgage payment (MRGP) (continuous)
+     - Property Value (VALP) (continuous)
+     
+Compared With original assignment 1, I have added a categorical variable about the construction year of the building, the first mortgage payment, and household language. The reason for this is that "Food stamp" and "Laptop" are not of many categories and might not be useful for future analysis. The addition of variable will help answer questions such as "Do richer families live in newer buildings?", "Are old buildings more expensive or not?".
+```{r, message=FALSE}
+household_data_as2 <- read_csv("household data_02.csv")
+attach(household_data_as2)
+```
+
+# 3. Distribution of a continuous variable HINCP (Household income)
+```{r}
+paste("The sample mean for the household income is", prettyNum(mean(HINCP)), "dollars.")
+paste("The sample standard deviation for the household income is", prettyNum(sd(HINCP)), "dollars.")
+paste("The sample interquartile deviation for the household income is", quantile(HINCP)["25%"], "to", quantile(HINCP)["75%"], "dollars.")
+household_income_95 <- t.test(HINCP)
+household_income_95
+paste("The 95-percent confidence interval for the household income is", prettyNum(household_income_95$conf.int[1]), "to", prettyNum(household_income_95$conf.int[2]), "dollars.")
+```
+```{r}
+hist_hh_income <- ggplot(household_data_as2, aes(x=HINCP))+ geom_histogram()
+hist_hh_income + 
+  theme_bw() +
+  scale_x_continuous(name = "Household Income(dollars)") +
+  scale_y_continuous(name = "Number of household in sample") +
+  annotate("text", x = 1000000, y = 13000, size = 3,
+           label = paste("Income mean (95% confidence): ",prettyNum(household_income_95$conf.int[1]), "to", prettyNum(household_income_95$conf.int[2]), "dollars.",
+                         "\nSample mean: ",prettyNum(mean(HINCP)), "dollars.",
+                         "\nSample standard deviation: ", prettyNum(sd(HINCP)), "dollars.",
+                         "\nSample interquatile range: ", quantile(HINCP)["25%"], "to", quantile(HINCP)["75%"], "dollars."))
+```
+In 2018, Families included in the sample made around 150500 dollars on average. The income differences between families were huge. Half of those households made 72000 to 180000 dollars for a year. The overall average of household income was likely to be in the range from 149523.5 to 151463.7 dollars. The diagram is right skew, indicating that there were a few people much more affluent than others.
+
+# 4. Distribution of a continuous variable MRGP (First Mortgage Payment)
+```{r}
+paste("The sample mean for the first mortgage payment is", prettyNum(mean(MRGP)), "dollars.")
+paste("The sample standard deviation for the first mortgage payment is", prettyNum(sd(MRGP)), "dollars.")
+paste("The sample interquartile deviation for the first mortgage payment is", quantile(MRGP)["25%"], "to", quantile(MRGP)["75%"], "dollars.")
+mortgage_95 <- t.test(MRGP)
+mortgage_95
+paste("The 95-percent confidence interval for the first mortgage payment is", prettyNum(mortgage_95$conf.int[1]), "to", prettyNum(mortgage_95$conf.int[2]), "dollars.")
+```
+```{r}
+hist_mortgage <- ggplot(household_data_as2, aes(x=MRGP))+ geom_histogram()
+hist_mortgage + 
+  theme_bw() +
+  scale_x_continuous(name = "First Mortgage Payment(dollars)") +
+  scale_y_continuous(name = "Number of household in sample") +
+  annotate("text", x = 5000, y = 5000, size = 3,
+           label = paste("Mortgage mean (95% confidence): ",prettyNum(mortgage_95$conf.int[1]), "to", prettyNum(mortgage_95$conf.int[2]),
+                         "\nSample mean: ",prettyNum(mean(MRGP)),
+                         "\nSample standard deviation: ", prettyNum(sd(MRGP)),
+                         "\nSample interquatile range: ", quantile(MRGP)["25%"], "to", quantile(MRGP)["75%"] ))
+```
+In 2018, Families included in the sample spent around 1791 dollars on average for the first mortgage payment. The payment differences between families were huge. Half of those households spent 800 to 2500 dollars for the first mortgage. The overall average of first mortgage payment was likely to range from 1782.348 to 1800.747 dollars. The diagram is right skew, indicating that a few households were spending much more money than others on the first mortgage.
+
+# 5. Distribution of a continuous variable VALP (Property Value)
+```{r}
+paste("The sample mean for the property value is", prettyNum(mean(VALP)), "dollars.")
+paste("The sample standard deviation for the property value is", prettyNum(sd(VALP)), "dollars.")
+paste("The sample interquartile deviation for the property value is", quantile(VALP)["25%"], "to", quantile(VALP)["75%"], "dollars.")
+property_95 <- t.test(VALP)
+property_95
+paste("The 95-percent confidence interval for the property value is", prettyNum(property_95$conf.int[1]), "to", prettyNum(property_95$conf.int[2]), "dollars.")
+```
+```{r}
+options(scipen = 999)
+hist_property <- ggplot(household_data_as2, aes(x=VALP))+ geom_histogram()
+hist_property + 
+  theme_bw() +
+  scale_x_continuous(name = "Property Value (dollars)") +
+  scale_y_continuous(name = "Number of household in sample") +
+  annotate("text", x = 3000000, y = 15000, size = 3,
+           label = paste("property value mean (95% confidence): ",prettyNum(property_95$conf.int[1]), "to", prettyNum(property_95$conf.int[2]),
+                         "\nSample mean: ",prettyNum(mean(VALP)),
+                         "\nSample standard deviation: ", prettyNum(sd(VALP)),
+                         "\nSample interquatile range: ", quantile(VALP)["25%"], "to", quantile(VALP)["75%"] ))
+```
+In 2018, the household property value was around 476450 dollars on average. The differences between the houses were huge. Half of these buildings cost 160000 to 599000 dollars. The overall average of property value was likely to be in the range from 472280 to 480620.8 dollars. The diagram is right skew, indicating that some households were spending much more money on their property.
+
+# 6. Distribution of a categorical variable bd_year (when structure first built)
+```{r}
+bld_year <- unique(bd_year)
+bld_year
+```
+```{r}
+bd_really_old <- t.test(bd_year == bld_year[1])
+bd_new <- t.test(bd_year == bld_year[2])
+bd_old <- t.test(bd_year == bld_year[3])
+bd_really_new <- t.test(bd_year == bld_year[4])
+
+shares <- tibble(Building_age = c("Really Old", "Old", "New", "Really new"),
+                 `Share`= c(bd_really_old$estimate,
+                            bd_old$estimate,
+                            bd_new$estimate,
+                            bd_really_new$estimate),
+                 Low = c(bd_really_old$conf.int[1],
+                         bd_old$conf.int[1],
+                         bd_new$conf.int[1],
+                         bd_really_new$conf.int[1]),
+                 High = c(bd_really_old$conf.int[2],
+                         bd_old$conf.int[2],
+                         bd_new$conf.int[2],
+                         bd_really_new$conf.int[2]))
+shares
+```
+```{r}
+ggplot(shares, aes(x=Building_age, y=Share, ymin = Low, ymax = High))+
+  geom_bar(stat="identity") +
+  geom_errorbar(width=0.5) +
+  theme_bw() +
+  scale_y_continuous(name = "Share of building ages (error bars represent\n 95-percent confidence intercal)",  
+                      breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) ,  
+                      label = c("0", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"))
+```
+Fifty-three percent of buildings were really old for households included in the sample, while the other 36% were old. There were only 11% of buildings newly built (in the last 20 years).
+
+# 7. Distribution of a categorical variable household_language (Household Language)
+```{r}
+language <- unique(household_language)
+language
+```
+```{r}
+lg_english <- t.test(household_language == language[1])
+lg_indo_euro <- t.test(household_language == language[2])
+lg_other <- t.test(household_language == language[3])
+lg_asian <- t.test(household_language == language[4])
+lg_spanish <- t.test(household_language == language[5])
+
+
+shares_02 <- tibble(Household_Language = c("English", "Spanish", "Indo-European languages", "Asian languages", "Others"),
+                 `Share`= c(lg_english$estimate,
+                            lg_spanish$estimate,
+                            lg_indo_euro$estimate,
+                            lg_asian$estimate,
+                            lg_other$estimate),
+                 Low = c(lg_english$conf.int[1],
+                         lg_spanish$conf.int[1],
+                         lg_indo_euro$conf.int[1],
+                         lg_asian$conf.int[1],
+                         lg_other$conf.int[1]),
+                 High = c(lg_english$conf.int[2],
+                         lg_spanish$conf.int[2],
+                         lg_indo_euro$conf.int[2],
+                         lg_asian$conf.int[2],
+                         lg_other$conf.int[2]))
+shares_02
+```
+
+
+```{r}
+ggplot(shares_02, aes(Household_Language, y=Share, ymin = Low, ymax = High))+
+  geom_bar(stat="identity") +
+  geom_errorbar(width=0.5) +
+  theme_bw() +
+  scale_y_continuous(name = "Share of household language (error bars represent\n 95-percent confidence intercal)",  
+                      breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7) ,  
+                      label = c("0", "10%", "20%", "30%", "40%", "50%", "60%", "70%"))
+```
+For households included in the sample, most of them used English in daily life. Eight percent of families used Spanish. Ten percent of families used other Indo-European languages. Only five percent of households used Asian languages in life.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
