@@ -1549,7 +1549,7 @@ library(ggplot2)</code></pre>
 <h1>2. Load household-level data</h1>
 <p>This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.</p>
 <p>the following five variables are included: - When structure first built (bd_year)(categorical) - Household language (household_language) (categorical) - Household income (HINCP) (continuous) - First mortgage payment (MRGP) (continuous) - Property Value (VALP) (continuous)</p>
-<p>Compared With original assignment 1, I have added a categorical variable about the construction year of the building, the first mortgage payment, and household language. The reason for this is that “Food stamp” and “Laptop” are not of many categories and might not be useful for future analysis. The addition of variable will help answer questions such as “Do richer families live in newer buildings?”, “Are old buildings more expensive or not?”.</p>
+<p>Compared With original assignment 1, I have changed three variables: the construction year of the building, the first mortgage payment, and household language. The reason for this is that “Food stamp” and “Laptop” are not of many categories and might not be useful for future analysis. The addition of variable will help answer questions such as “Do richer families live in newer buildings?”, “Are old buildings more expensive or not?”.</p>
 <pre class="r"><code>household_data_as2 &lt;- read_csv(&quot;household data_02.csv&quot;)
 attach(household_data_as2)</code></pre>
 </div>

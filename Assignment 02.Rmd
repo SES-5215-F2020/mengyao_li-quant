@@ -25,7 +25,7 @@ the following five variables are included:
      - First mortgage payment (MRGP) (continuous)
      - Property Value (VALP) (continuous)
      
-Compared With original assignment 1, I have added a categorical variable about the construction year of the building, the first mortgage payment, and household language. The reason for this is that "Food stamp" and "Laptop" are not of many categories and might not be useful for future analysis. The addition of variable will help answer questions such as "Do richer families live in newer buildings?", "Are old buildings more expensive or not?".
+Compared With original assignment 1, I have changed three variables: the construction year of the building, the first mortgage payment, and household language. The reason for this is that "Food stamp" and "Laptop" are not of many categories and might not be useful for future analysis. The addition of variable will help answer questions such as "Do richer families live in newer buildings?", "Are old buildings more expensive or not?".
 ```{r, message=FALSE}
 household_data_as2 <- read_csv("household data_02.csv")
 attach(household_data_as2)
