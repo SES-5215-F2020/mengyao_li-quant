@@ -1,0 +1,319 @@
+---
+title: "Assignment 03"
+author: "Mengyao"
+date: "2020/9/18"
+output: 
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+---
+
+# Loading packages
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+# Loading data
+Loading the household-level dataset from week 2. 
+This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.
+
+the following five variables are included:
+     - When structure first built (bd_year)(categorical)
+     - Household language (household_language) (categorical)
+     - Household income (HINCP) (continuous)
+     - First mortgage payment (MRGP) (continuous)
+     - Property Value (VALP) (continuous)
+     
+I filter those buildings whose construction time is unclear, and rewrite it as csv file for future use. 
+```{r, message=FALSE}
+household_data_as2 <- read_csv("household data_02.csv")
+household_data_as3 <- household_data_as2 %>%
+  filter(bd_year != "NA")
+write_csv(household_data_as3, "household data_03.csv")
+```
+
+# Relationship between two continuous variables
+
+1. Relationship between household income (HINCP) and first mortgage payment (MRGP)
+```{r}
+cor_income_mortgage <- cor.test(household_data_as3$HINCP, household_data_as3$MRGP)
+cor_income_mortgage
+```
+
+visualizing the relationship
+```{r}
+ggplot(household_data_as3,
+       aes(x = HINCP, y = MRGP)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Household Income (dollars)") +
+  scale_y_continuous(name = "First Mortgage Payment (dollars)") +
+  annotate("text", x = 0, y = 6000,
+           label = paste("Correlation (95-percent confidence): ", prettyNum(cor_income_mortgage$conf.int[1], digits =2), "to", prettyNum(cor_income_mortgage$conf.int[2])),
+           hjust = 0)
+```
+
+The correlation between household income and first mortgage payment is positive and quite strong. With higher income, families tended to spend more on first mortgage payment. 
+
+2. Relationship between household income (HINCP) and property value (VALP)
+```{r}
+cor_income_property <- cor.test(household_data_as3$HINCP, household_data_as3$VALP)
+cor_income_property
+```
+
+visualizing the relationship
+```{r}
+options(scipen = 999)
+ggplot(household_data_as3,
+       aes(x = HINCP, y = VALP)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Household Income (dollars)") +
+  scale_y_continuous(name = "Property Value (dollars)") +
+  annotate("text", x = 0, y = 4500000,
+           label = paste("Correlation (95-percent confidence): ", prettyNum(cor_income_property$conf.int[1], digits =2), "to", prettyNum(cor_income_property$conf.int[2])),
+           hjust = 0)
+```
+
+The correlation between household income and property value is positive and quite strong. Richer families tended to live in more expensive houses. 
+
+3. Relationship between first mortgage payment (MRGP) and property value (VALP)
+```{r}
+cor_mortgage_property <- cor.test(household_data_as3$MRGP, household_data_as3$VALP)
+cor_mortgage_property
+```
+
+visualizing the relationship
+```{r}
+options(scipen = 999)
+ggplot(household_data_as3,
+       aes(x = MRGP, y = VALP)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "First Mortgage Payment (dollars)") +
+  scale_y_continuous(name = "Property Value (dollars)") +
+  annotate("text", x = 0, y = 4500000,
+           label = paste("Correlation (95-percent confidence): ", prettyNum(cor_mortgage_property$conf.int[1], digits =2), "to", prettyNum(cor_mortgage_property$conf.int[2])),
+           hjust = 0)
+```
+
+The correlation between first mortgage payment and property value is positive and quite strong. More expensive houses often require higher first mortgage payment. Yet I am expecting the correlation to be even stronger. I am guessing that maybe when houses are not that expensive (less than 1000000 dollars), the price have little influence on the first mortgage payment.
+
+# Relationship between a continuous variable and a categorical variable (three or more levels)
+
+I would like to thank Sara for clarification of the Tukey HSD test. 
+
+1. Relationship between household income (HINCP) and when structure first built (bd_year)
+```{r}
+anova_income_bdage <- aov(HINCP ~ bd_year, data = household_data_as3)
+summary(anova_income_bdage)
+```
+
+The p-value is much lower than 0.05, so at a 95-percent confidence interval, there is a significant association between the household income and structure age.
+
+Taking a Tukey's Honestly Significant Difference test to see the magnitude of the differences among the difference categories.
+```{r}
+differences_income_bdage <- TukeyHSD(anova_income_bdage)
+as_tibble(cbind(pair = row.names(differences_income_bdage$bd_year),
+                differences_income_bdage$bd_year))
+```
+
+Only for the pairing of "Really new" and "New", the p-value is higher than 0.05, which means that there is little association with the household income. 
+
+Visualizing those differences with a box plot
+```{r}
+ggplot(household_data_as3,
+       aes(x = bd_year, y = HINCP)) +
+  geom_boxplot() +
+  theme_light() +
+#  theme(axis.text.x = element_text(angle = 90)) +
+  scale_x_discrete(name = "When Structure First Built") +
+  scale_y_continuous(name = "Household Income",
+                     breaks = seq(0, 1750000, by = 250000),
+                     labels = paste("$", 
+                                    prettyNum(seq(0, 1750000, by = 250000), 
+                                              big.mark = ",")))
+```
+
+2. Relationship between household income (HINCP) and household language (household_language)
+```{r}
+anova_income_language <- aov(HINCP ~ household_language, data = household_data_as3)
+summary(anova_income_language)
+```
+
+The p-value is much lower than 0.05, so at a 95-percent confidence interval, there is a significant association between the household income and household language.
+
+Taking a Tukey's Honestly Significant Difference test to see the magnitude of the differences among the difference categories.
+
+```{r}
+differences_income_language <- TukeyHSD(anova_income_language)
+as_tibble(cbind(pair = row.names(differences_income_language$household_language),
+                differences_income_language$household_language))
+```
+
+For the pairing of "other language" and "Other Indo-European languages", "Spanish" and "English only", the p-value is higher than 0.05, which means that there is little association with the household income. 
+
+Visualizing those differences with a violin plot
+```{r}
+ggplot(household_data_as3,
+       aes(x = household_language, y = HINCP)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Household Language",
+                   labels = c("Asian and Pacific \nIsland languages", "English only", "Other Indo-European \nlanguages", "Other language", "Spanish")) +
+  scale_y_continuous(name = "Household Income",
+                     breaks = seq(0, 1750000, by = 250000),
+                     labels = paste("$", 
+                                    prettyNum(seq(0, 1750000, by = 250000), 
+                                              big.mark = ",")))
+```
+
+3. Relationship between first mortgage payment (MRGP) and when structure first built (bd_year)
+```{r}
+anova_mortgage_bdage <- aov(MRGP~bd_year, data = household_data_as3)
+summary(anova_mortgage_bdage)
+```
+The p-value is much lower than 0.05, so at a 95-percent confidence interval, there is a significant association between the first mortgage payment and structure age.
+
+Taking a Tukey's Honestly Significant Difference test to see the magnitude of the differences among the difference categories.
+
+```{r}
+differences_mortgage_bdage <- TukeyHSD(anova_income_bdage)
+as_tibble(cbind(pair = row.names(differences_mortgage_bdage$bd_year),
+                differences_mortgage_bdage$bd_year))
+```
+
+Only for the pairing of "Really new" and "New", the p-value is higher than 0.05, which means that there is little association with the first mortgage payment. 
+
+Visualizing those differences with a box plot
+```{r}
+ggplot(household_data_as3,
+       aes(x = bd_year, y = MRGP)) +
+  geom_boxplot() +
+  theme_light() +
+  scale_x_discrete(name = "When Structure First Built") +
+  scale_y_continuous(name = "First Mortgage Payment",
+                     breaks = seq(0, 7500, by = 1250),
+                     labels = paste("$", 
+                                    prettyNum(seq(0, 7500, by = 1250), 
+                                              big.mark = ",")))
+```
+
+4. Relationship between first mortgage payment (MRGP) and household language (household_language)
+```{r}
+anova_mortgage_language <- aov(MRGP ~ household_language, data = household_data_as3)
+summary(anova_mortgage_language)
+```
+
+The p-value is much lower than 0.05, so at a 95-percent confidence interval, there is a significant association between the first mortgage payment and household language.
+
+Taking a Tukey's Honestly Significant Difference test to see the magnitude of the differences among the difference categories.
+
+```{r}
+differences_mortgage_language <- TukeyHSD(anova_mortgage_language)
+as_tibble(cbind(pair = row.names(differences_mortgage_language$household_language),
+                differences_mortgage_language$household_language))
+```
+
+Only for the pairing of "other language" and "Asian and Pacific Island languages", the p-value is higher than 0.05, which means that there is little association with first mortgage payment. 
+
+Visualizing those differences with a violin plot
+```{r}
+ggplot(household_data_as3,
+       aes(x = household_language, y = MRGP)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Household Language",
+                   labels = c("Asian and Pacific \nIsland languages", "English only", "Other Indo-European \nlanguages", "Other language", "Spanish")) +
+  scale_y_continuous(name = "First Mortgage Payment",
+                     breaks = seq(0, 7500, by = 1250),
+                     labels = paste("$", 
+                                    prettyNum(seq(0, 7500, by = 1250), 
+                                              big.mark = ",")))
+```
+
+5. Relationship between property value (VALP) and when structure first built (bd_year)
+```{r}
+anova_property_bdage <- aov(VALP~bd_year, data = household_data_as3)
+summary(anova_property_bdage)
+```
+The p-value is much lower than 0.05, so at a 95-percent confidence interval, there is a significant association between the property value and structure age.
+
+Taking a Tukey's Honestly Significant Difference test to see the magnitude of the differences among the difference categories.
+
+```{r}
+differences_property_bdage <- TukeyHSD(anova_property_bdage)
+as_tibble(cbind(pair = row.names(differences_property_bdage$bd_year),
+                differences_property_bdage$bd_year))
+```
+
+Visualizing those differences with a box plot
+```{r}
+ggplot(household_data_as3,
+       aes(x = bd_year, y = VALP)) +
+  geom_boxplot() +
+  theme_light() +
+  scale_x_discrete(name = "When Structure First Built") +
+  scale_y_continuous(name = "Property Value",
+                     breaks = seq(0, 6000000, by = 1000000),
+                     labels = paste("$", 
+                                    prettyNum(seq(0, 6000000, by = 1000000), 
+                                              big.mark = ",")))
+```
+
+6. Relationship between property value (VALP) and household language (household_language)
+```{r}
+anova_property_language <- aov(VALP ~ household_language, data = household_data_as3)
+summary(anova_property_language)
+```
+
+The p-value is much lower than 0.05, so at a 95-percent confidence interval, there is a significant association between the property value and household language.
+
+Taking a Tukey's Honestly Significant Difference test to see the magnitude of the differences among the difference categories.
+
+```{r}
+differences_property_language <- TukeyHSD(anova_property_language)
+as_tibble(cbind(pair = row.names(differences_property_language$household_language),
+                differences_property_language$household_language))
+```
+
+Only for the pairing of "other language" and "Asian and Pacific Island languages", the p-value is higher than 0.05, which means that there is little association with the property value. 
+
+Visualizing those differences with a violin plot
+```{r}
+ggplot(household_data_as3,
+       aes(x = household_language, y = VALP)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Household Language",
+                   labels = c("Asian and Pacific \nIsland languages", "English only", "Other Indo-European \nlanguages", "Other language", "Spanish")) +
+  scale_y_continuous(name = "Property Value",
+                     breaks = seq(0, 6000000, by = 1000000),
+                     labels = paste("$", 
+                                    prettyNum(seq(0, 6000000, by = 1000000), 
+                                              big.mark = ",")))
+```
+
+# Relationship between two categorical variables
+
+Relationship between when structure first built (bd_year) and household language (household_language)
+```{r}
+chi_bdage_language <- chisq.test(household_data_as3$bd_year, household_data_as3$household_language)
+chi_bdage_language
+```
+The p-value is much less than 0.05, so the relationship is significant at a 95-percent confidence level. 
+
+Here are the values I observe for combination of variables:
+```{r}
+chi_bdage_language$observed
+```
+
+Here are the values I would expect if the two variables were not related:
+```{r}
+chi_bdage_language$expected
+```
