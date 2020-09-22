@@ -102,7 +102,7 @@ ggplot(household_data_as3,
            hjust = 0)
 ```
 
-The correlation between first mortgage payment and property value is positive and quite strong. More expensive houses often require higher first mortgage payment. Yet I am expecting the correlation to be even stronger. I am guessing that maybe when houses are not that expensive (less than 1000000 dollars), the price have little influence on the first mortgage payment.
+The correlation between the first mortgage payment and property value is positive and quite strong. More expensive houses often require higher first mortgage payments. Yet I am expecting the correlation to be even stronger. I guess that maybe when houses are not that expensive (less than 1000000 dollars), the price has little influence on the first mortgage payment.
 
 # Relationship between a continuous variable and a categorical variable (three or more levels)
 
