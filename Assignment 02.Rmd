@@ -43,12 +43,14 @@ household_income_95
 paste("The 95-percent confidence interval for the household income is", prettyNum(household_income_95$conf.int[1]), "to", prettyNum(household_income_95$conf.int[2]), "dollars.")
 ```
 ```{r}
-hist_hh_income <- ggplot(household_data_as2, aes(x=HINCP))+ geom_histogram()
+hist_hh_income <- ggplot(household_data_as2, 
+                         aes(x=HINCP)) + 
+  geom_histogram(bins = 20)
 hist_hh_income + 
   theme_bw() +
   scale_x_continuous(name = "Household Income(dollars)") +
   scale_y_continuous(name = "Number of household in sample") +
-  annotate("text", x = 1000000, y = 13000, size = 3,
+  annotate("text", x = 1000000, y = 30000, size = 3,
            label = paste("Income mean (95% confidence): ",prettyNum(household_income_95$conf.int[1]), "to", prettyNum(household_income_95$conf.int[2]), "dollars.",
                          "\nSample median: ",prettyNum(median(HINCP)), "dollars.",
                          "\nSample mean: ",prettyNum(mean(HINCP)), "dollars.",
@@ -69,12 +71,14 @@ mortgage_95
 paste("The 95-percent confidence interval for the first mortgage payment is", prettyNum(mortgage_95$conf.int[1]), "to", prettyNum(mortgage_95$conf.int[2]), "dollars.")
 ```
 ```{r}
-hist_mortgage <- ggplot(household_data_as2, aes(x=MRGP))+ geom_histogram()
+hist_mortgage <- ggplot(household_data_as2, 
+                        aes(x=MRGP)) + 
+  geom_histogram(bins = 20)
 hist_mortgage + 
   theme_bw() +
   scale_x_continuous(name = "First Mortgage Payment(dollars)") +
   scale_y_continuous(name = "Number of household in sample") +
-  annotate("text", x = 5000, y = 5000, size = 3,
+  annotate("text", x = 5000, y = 10000, size = 3,
            label = paste("Mortgage mean (95% confidence): ",prettyNum(mortgage_95$conf.int[1]), "to", prettyNum(mortgage_95$conf.int[2]),
                          "\nSample median: ",prettyNum(median(MRGP)),
                          "\nSample mean: ",prettyNum(mean(MRGP)),
@@ -96,7 +100,9 @@ paste("The 95-percent confidence interval for the property value is", prettyNum(
 ```
 ```{r}
 options(scipen = 999)
-hist_property <- ggplot(household_data_as2, aes(x=VALP))+ geom_histogram()
+hist_property <- ggplot(household_data_as2, 
+                        aes(x=VALP)) + 
+  geom_histogram(bins = 20)
 hist_property + 
   theme_bw() +
   scale_x_continuous(name = "Property Value (dollars)") +
