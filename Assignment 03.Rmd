@@ -310,10 +310,29 @@ The p-value is much less than 0.05, so the relationship is significant at a 95-p
 
 Here are the values I observe for combination of variables:
 ```{r}
-chi_bdage_language$observed
+observation <- chi_bdage_language$observed
+observation
 ```
 
 Here are the values I would expect if the two variables were not related:
 ```{r}
-chi_bdage_language$expected
+expectation <- chi_bdage_language$expected
+expectation
 ```
+
+Visualizing the differences between observation and expectation with a hear map. I learned this visualisation idea from Ryan.
+```{r}
+differences <- observation - expectation
+difference_obs_exp <- as.data.frame(differences)
+ggplot(difference_obs_exp,
+       aes(x = Var2, y = household_data_as3.bd_year, fill = Freq)) +
+  geom_tile() +
+  scale_x_discrete(name = "Household Language",
+                   labels = c("Asian and Pacific \nIsland languages", "English\nonly", "Other Indo-\nEuro languages", "Other\nlanguage", "Spanish")) +
+  scale_y_discrete(name = "When Structure First Built") +
+  scale_fill_gradient2(name = "Difference between observed \nand expected values", 
+                       low="yellow",
+                       high="blue") +
+  theme_light()
+```
+
