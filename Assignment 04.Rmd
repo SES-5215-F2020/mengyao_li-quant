@@ -1,0 +1,83 @@
+---
+title: "Assignment 04"
+author: "Mengyao"
+date: "2020/9/25"
+output: 
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+---
+
+# Loading packages
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+# Loading data
+
+Loading the household-level dataset from week 3. 
+This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.
+
+the following five variables are included:
+
+     - When structure first built (bd_year)(categorical)
+     - Household language (household_language) (categorical)
+     - Household income (HINCP) (continuous)
+     - First mortgage payment (MRGP) (continuous)
+     - Property Value (VALP) (continuous)
+     
+```{r, message=FALSE}
+household_data_as4 <- read_csv("household data_03.csv")
+```
+
+# Estimating a regression model
+
+I will do a linear regression predicting property value based on building age, household language, household income and first mortgage payment.
+```{r}
+options(scipen = 999)
+model <- lm(VALP ~ bd_year + household_language + HINCP + MRGP,
+            data = household_data_as4)
+summary(model)
+```
+
+# Interpreting the results
+
+As all p-values are less than 0.05, all coefficients are significant at a 95-percent confidence level (at least one star next to the p-value).
+
+This model's multiple R-squared value is 0.3599, which tells us that this model predicts about 36% of the variation in property value of the homes in this dataset. That's quite a high R-squared value.
+
+1. For continuous variables:
+
+- Household income (HINCP)
+
+In the results above, the coefficient estimate for HINCP is 1.0705. This tells us that each additional dollar of household income is associated with an average increase in property value of about $1.1, controlling for the other variables in the model.
+
+- First mortgage payment (MRGP)
+
+The coefficient estimate for MRGP is 187.9536. This tells us that for each additional dollar of the first mortgage payment, the property value increases by about $188.0, on average, controlling for when the structure first built, household language, and household income.
+
+2. For categorical variables:
+
+- When structure first built (bd_year)
+
+For the categorical variable of building age, everything is compared to new structures (built between 2000 - 2010; the category isn't shown in the coefficients table). 
+
+The coefficient estimate for old structures (built between 1960 - 1999) is -34854.3902. This means that, on average and controlling for everything else in the model, the property value for old buildings will be about $34854.4 less than the property value of new structures. 
+
+The coefficient estimate for really new structures (built between 2011 - 2017) is 59399.6403, which indicated that the property value for a really new building would be around $59399.6 more than for a comparable new building.
+
+The coefficient estimate for really old structures (built before 1960) is 34903.7824, meaning that the property value for really old structures would be around $34903.78 more than new buildings' property value. 
+
+- Household Language (household_language)
+
+For the categorical variable of household language, everything is compared to Asian and Pacific Island languages (the category that is not shown in the coefficients table).
+
+The coefficient estimate for English only household is -168216.6143. This means that, on average and controlling for everything else in the model, the property value for families that speak English only will be about $168216.61 less than the property value of households that speak Asian and Pacific Island languages.
+
+The coefficient estimate for households that speak other Indo-European languages is -57327.3548, which indicated that the property value for an Indo-European-languages-speaking family would be around $57327.35 less than for a comparable Asian-and-Pacific-Island-languages-speaking family.
+
+The coefficient estimate for other-language-speaking households is -29840.3020, meaning that the property value for other-language-speaking families would be around $29840.30 less than for Asian-and-Pacific-Island-languages speaking homes.
+
+The coefficient estimate for Spanish-speaking households is -156506.5717. This tells us that Spanish-speaking families' property value would be around $156506.57 less than the property value for Asian-and-Pacific-Island-languages-speaking households.
+
