@@ -67,7 +67,7 @@ The coefficient estimate for old structures (built between 1960 - 1999) is -3485
 
 The coefficient estimate for really new structures (built between 2011 - 2017) is 59399.6403, which indicated that the property value for a really new building would be around $59399.6 more than for a comparable new building.
 
-The coefficient estimate for really old structures (built before 1960) is 34903.7824, meaning that the property value for really old structures would be around $34903.78 more than new buildings' property value. 
+The coefficient estimate for really old structures (built before 1960) is 34903.7824, meaning that the property value for really old structures would be around $34903.78 more than new buildings' property value. Maybe it is because those really old buildings that survived are great in structure, architectural design or history.  
 
 - Household Language (household_language)
 
