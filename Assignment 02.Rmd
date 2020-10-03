@@ -9,30 +9,31 @@ output:
     toc_float: true
 ---
 
-# 1. Load packages
+# Loading packages
 ```{r, message=FALSE}
 library(tidyverse)
 library(ggplot2)
 ```
 
-# 2. Load household-level data
+# Loading household-level data
 This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.
 
-the following five variables are included:
+the following six variables are included:
 
      - When structure first built (bd_year)(categorical)  
-     - Household language (household_language) (categorical)  
+     - Household language (household_language) (categorical)
+     - Access to the internet (intel_access)(categorical)
      - Household income (HINCP) (continuous)  
      - First mortgage payment (MRGP) (continuous)  
      - Property Value (VALP) (continuous)  
      
-Compared With original assignment 1, I have changed three variables: the construction year of the building, the first mortgage payment, and household language. The reason for this is that "Food stamp" and "Laptop" are not of many categories and might not be useful for future analysis. The addition of variable will help answer questions such as "Do richer families live in newer buildings?", "Are old buildings more expensive or not?".
+Compared With original assignment 1, I have changed four variables: the construction year of the building, the first mortgage payment, the access to internet and household language. The reason for this is that "Food stamp" and "Laptop" are not of many categories and might not be useful for future analysis. The addition of variables will help answer questions such as "Do richer families live in newer buildings?", "Are old buildings more expensive or not?".
 ```{r, message=FALSE}
 household_data_as2 <- read_csv("household data_02.csv")
 attach(household_data_as2)
 ```
 
-# 3. Distribution of a continuous variable HINCP (Household income)
+# Distribution of a continuous variable HINCP (Household income)
 ```{r}
 paste("The sample mean for the household income is", prettyNum(mean(HINCP)), "dollars.")
 paste("The sample median for the household income is", prettyNum(median(HINCP)), "dollars.")
@@ -60,7 +61,7 @@ hist_hh_income +
 
 In 2018, Families included in the sample made around 150500 dollars on average. Half of all households made more than 117000 dollars. The income differences between families were huge. Half of those households made 72000 to 180000 dollars for a year. The overall average of household income was likely to be in the range from 149523.5 to 151463.7 dollars. The diagram is right skew, indicating that there were a few people much more affluent than others.
 
-# 4. Distribution of a continuous variable MRGP (First Mortgage Payment)
+# Distribution of a continuous variable MRGP (First Mortgage Payment)
 ```{r}
 paste("The sample mean for the first mortgage payment is", prettyNum(mean(MRGP)), "dollars.")
 paste("The sample median for the first mortgage payment is", prettyNum(median(MRGP)), "dollars.")
@@ -88,7 +89,7 @@ hist_mortgage +
 
 In 2018, Families included in the sample spent around 1791 dollars on average for the first mortgage payment. Half of all households spent more than 1500 dollars on it. The payment differences between families were huge. Half of those households spent 800 to 2500 dollars for the first mortgage. The overall average of first mortgage payment was likely to range from 1782.348 to 1800.747 dollars. The diagram is right skew, indicating that a few households were spending much more money than others on the first mortgage.
 
-# 5. Distribution of a continuous variable VALP (Property Value)
+# Distribution of a continuous variable VALP (Property Value)
 ```{r}
 paste("The sample mean for the property value is", prettyNum(mean(VALP)), "dollars.")
 paste("The sample median for the property value is", prettyNum(median(VALP)), "dollars.")
@@ -117,7 +118,7 @@ hist_property +
 
 In 2018, the household property value was around 476450 dollars on average. Half of these buildings cost more than 340000 dollars. The differences between the houses were huge. Half of these buildings cost 160000 to 599000 dollars. The overall average of property value was likely to be in the range from 472280 to 480620.8 dollars. The diagram is right skew, indicating that some households were spending much more money on their property.
 
-# 6. Distribution of a categorical variable bd_year (when structure first built)
+# Distribution of a categorical variable bd_year (when structure first built)
 ```{r}
 bld_year <- unique(bd_year)
 bld_year
@@ -155,7 +156,7 @@ ggplot(shares, aes(x=Building_age, y=Share, ymin = Low, ymax = High))+
 
 Fifty-three percent of buildings were really old for households included in the sample, while the other 36% were old. There were only 11% of buildings newly built (in the last 20 years).
 
-# 7. Distribution of a categorical variable household_language (Household Language)
+# Distribution of a categorical variable household_language (Household Language)
 ```{r}
 language <- unique(household_language)
 language
@@ -200,7 +201,36 @@ ggplot(shares_02, aes(Household_Language, y=Share, ymin = Low, ymax = High))+
 
 For households included in the sample, most of them used English in daily life. Eight percent of families used Spanish. Ten percent of families used other Indo-European languages. Only five percent of households used Asian languages in life.
 
+# Distribution of a categorical variable intel_access (Internet Access)
+```{r}
+intel <- unique(intel_access)
+intel
+```
+```{r}
+intel_true <- t.test(intel_access == intel[1])
+intel_false <- t.test(intel_access == intel[2])
 
+shares_03 <- tibble(intel_access = c("TRUE", "FALSE"),
+                 `Share`= c(intel_true$estimate,
+                            intel_false$estimate),
+                 Low = c(intel_true$conf.int[1],
+                         intel_false$conf.int[1]),
+                 High = c(intel_true$conf.int[2],
+                         intel_false$conf.int[2]))
+shares_03
+```
+
+
+```{r}
+ggplot(shares_03, aes(x=intel_access, y=Share, ymin = Low, ymax = High))+
+  geom_bar(stat="identity") +
+  geom_errorbar(width=0.5) +
+  theme_bw() +
+  scale_x_discrete(name = "Whether or not have access to internet") +
+  scale_y_continuous(name = "Share of internet access (error bars represent\n 95-percent confidence intercal)",  
+                      breaks = c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1) ,  
+                      label = c("0", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"))
+``` 
 
 
 
