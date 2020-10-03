@@ -1540,138 +1540,105 @@ div.tocify {
 </div>
 
 
-<div id="load-tidycensus-tidyverse-dplyr-httr-knitr" class="section level1">
-<h1>1. Load tidycensus, tidyverse, dplyr, httr, knitr</h1>
+<div id="loading-packages" class="section level1">
+<h1>Loading packages</h1>
 <pre class="r"><code>library(tidycensus)
 library(tidyverse)
 library(dplyr)
 library(httr)
 library(knitr)</code></pre>
 </div>
-<div id="load-household-level-data-from-the-1-year-american-community-survey-sample-from-2018" class="section level1">
-<h1>2. Load household-level data from the 1-year American Community Survey Sample from 2018</h1>
+<div id="loading-household-level-data-from-the-1-year-american-community-survey-sample-from-2018" class="section level1">
+<h1>Loading household-level data from the 1-year American Community Survey Sample from 2018</h1>
 <p>I want to do a household-level analysis.</p>
 <pre class="r"><code>household_variable_2018 &lt;- pums_variables %&gt;%
   distinct(year, survey, var_code, var_label, data_type, level) %&gt;%
   filter(level == &quot;housing&quot;, year == 2018, survey == &quot;acs1&quot;)</code></pre>
 </div>
-<div id="fix-connection-problem" class="section level1">
-<h1>3. Fix connection problem</h1>
+<div id="fixing-connection-problem" class="section level1">
+<h1>Fixing connection problem</h1>
 <p>I am constantly getting an error message “Failed to connect to api.census.gov”. I have searched online for different methods. This chunk solves my problem.</p>
 <pre class="r"><code> set_config(
      use_proxy(url=&quot;127.0.0.1&quot;, port=7890)
  )
  httr::GET(&quot;https://www.census.gov/&quot;)</code></pre>
 </div>
-<div id="choose-5-variables" class="section level1">
-<h1>4. Choose 5 variables:</h1>
-<p>After looking through the variables available in household_variable_2018, I have chosen the following five variables:</p>
-<pre><code> - Food stamp (FS) (categorical)
- - Laptop (LAPTOP) (categorical)
+<div id="choosing-6-variables" class="section level1">
+<h1>Choosing 6 variables</h1>
+<p>After looking through the variables available in household_variable_2018, I have chosen the following six variables:</p>
+<pre><code> - When structure first built (YBL)(categorical)
+ - Household language (HHL) (categorical)
+ - Access to the internet (ACCESS)
  - Household income (HINCP) (continuous)
- - Number of own children (NOC) (continuous)
+ - First mortgage payment (MRGP) (continuous)
  - Property Value (VALP) (continuous)
  </code></pre>
-<p>I want my sample to include all households in New York State. Through those data, I would like to explore the relationship between household income and property value, number of children, food stamps, and laptop. The following questions can find an answer through this analysis: “Do richer families spend more on housing?”, “Do they tend to have more children?”, “Does more children means more laptop?”, “Is there a correlation between income and food stamp used?”, etc.</p>
-<pre class="r"><code>household_data &lt;- get_pums(variables = c(&quot;FS&quot;, &quot;LAPTOP&quot;, &quot;HINCP&quot;, &quot;NOC&quot;, &quot;VALP&quot;),
+<p>I want my sample to include all households in New York State. Through those data, I would like to explore the relationship between household income and property value, structure age, mortgage payment, and household language. The following questions can find an answer through this analysis: “Do richer families spend more on housing?”, “Do they tend to live in newer structure?”, “Do all households use English?”, etc.</p>
+<pre class="r"><code>household_data &lt;- get_pums(variables = c(&quot;YBL&quot;, &quot;HHL&quot;, &quot;ACCESS&quot;, &quot;HINCP&quot;, &quot;MRGP&quot;, &quot;VALP&quot;),
                            state = &quot;NY&quot;,
                            year = 2018,
                            survey = &quot;acs1&quot;,
                            recode = TRUE) </code></pre>
 <pre><code>## Getting data from the 2018 1-year ACS Public Use Microdata Sample</code></pre>
 </div>
-<div id="select-and-present-columns-from-household_data-dataframe" class="section level1">
-<h1>5. Select and present columns from household_data dataframe</h1>
-<p>This dataset includes 196,967 households. The first ten rows are presented here as a formatted table.</p>
-<pre class="r"><code>hh_data &lt;- select(household_data, &quot;FS&quot;, &quot;LAPTOP&quot;, &quot;HINCP&quot;, &quot;NOC&quot;, &quot;VALP&quot;)
-knitr::kable(hh_data[1:10,])</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">FS</th>
-<th align="left">LAPTOP</th>
-<th align="right">HINCP</th>
-<th align="right">NOC</th>
-<th align="right">VALP</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="odd">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="even">
-<td align="left">1</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="odd">
-<td align="left">1</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="odd">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="odd">
-<td align="left">1</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="left">b</td>
-<td align="right">-60000</td>
-<td align="right">-1</td>
-<td align="right">-1</td>
-</tr>
-</tbody>
-</table>
+<div id="selecting-and-presenting-columns-from-household_data-dataframe" class="section level1">
+<h1>Selecting and presenting columns from household_data dataframe</h1>
+<p>This dataset includes 79,116 households. The first ten rows are presented here as a formatted table.</p>
+<pre class="r"><code>hh_data &lt;- household_data %&gt;%
+  filter(YBL != &quot;bb&quot;,
+         MRGP != 0,
+         ACCESS != &quot;b&quot;) %&gt;%
+  mutate(intel_access = case_when(ACCESS == &quot;1&quot;~&quot;TRUE&quot;,
+                                  ACCESS == &quot;2&quot;~&quot;TRUE&quot;,
+                                  ACCESS == &quot;3&quot;~&quot;FALSE&quot;)) %&gt;%
+  mutate(household_language = case_when(HHL == &quot;1&quot;~&quot;English only&quot;,
+                                        HHL == &quot;2&quot;~&quot;Spanish&quot;,
+                                        HHL == &quot;3&quot;~&quot;Other Indo-European languages&quot;,
+                                        HHL == &quot;4&quot;~&quot;Asian and Pacific Island languages&quot;,
+                                        HHL == &quot;5&quot;~&quot;Other language&quot;)) %&gt;%
+  mutate(bd_year = case_when(YBL == &quot;01&quot;~&quot;Really old&quot;,
+                             YBL == &quot;02&quot;~&quot;Really old&quot;,
+                             YBL == &quot;03&quot;~&quot;Really old&quot;,
+                             YBL == &quot;04&quot;~&quot;Old&quot;,
+                             YBL == &quot;05&quot;~&quot;Old&quot;,
+                             YBL == &quot;06&quot;~&quot;Old&quot;,
+                             YBL == &quot;07&quot;~&quot;Old&quot;,
+                             YBL == &quot;08&quot;~&quot;New&quot;,
+                             YBL == &quot;09&quot;~&quot;New&quot;,
+                             YBL == &quot;10&quot;~&quot;New&quot;,
+                             YBL == &quot;11&quot;~&quot;New&quot;,
+                             YBL == &quot;12&quot;~&quot;New&quot;,
+                             YBL == &quot;13&quot;~&quot;New&quot;,
+                             YBL == &quot;14&quot;~&quot;New&quot;,
+                             YBL == &quot;15&quot;~&quot;Really new&quot;,
+                             YBL == &quot;16&quot;~&quot;Really new&quot;,
+                             YBL == &quot;17&quot;~&quot;Really new&quot;,
+                             YBL == &quot;18&quot;~&quot;Really new&quot;,
+                             YBL == &quot;19&quot;~&quot;Really new&quot;,
+                             YBL == &quot;20&quot;~&quot;Really new&quot;,
+                             YBL == &quot;21&quot;~&quot;Really new&quot;,
+  )) %&gt;%
+  select(bd_year, household_language, intel_access, &quot;HINCP&quot;, &quot;MRGP&quot;, &quot;VALP&quot;)
+
+hh_data</code></pre>
+<pre><code>## # A tibble: 79,116 x 6
+##    bd_year    household_language intel_access  HINCP  MRGP   VALP
+##    &lt;chr&gt;      &lt;chr&gt;              &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  1 Really old English only       TRUE          85000  1700 375000
+##  2 Really old English only       TRUE          85000  1700 375000
+##  3 New        English only       TRUE          71100  1200 180000
+##  4 New        English only       TRUE         566400  2400 500000
+##  5 New        English only       TRUE         566400  2400 500000
+##  6 New        English only       TRUE         566400  2400 500000
+##  7 New        English only       TRUE         566400  2400 500000
+##  8 Old        English only       TRUE         148400   950 160000
+##  9 Old        English only       TRUE         171320  1200 260000
+## 10 Old        English only       TRUE         171320  1200 260000
+## # ... with 79,106 more rows</code></pre>
 </div>
 <div id="saving-data" class="section level1">
-<h1>6. Saving data</h1>
-<pre class="r"><code>write_csv(hh_data, &quot;household data_01.csv&quot;)</code></pre>
+<h1>Saving data</h1>
+<pre class="r"><code>write_csv(hh_data, &quot;household data_02.csv&quot;)</code></pre>
 </div>
 
 

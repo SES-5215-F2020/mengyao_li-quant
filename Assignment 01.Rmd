@@ -8,7 +8,7 @@ output:
     toc: true
     toc_float: true
 ---
-# 1. Load tidycensus, tidyverse, dplyr, httr, knitr
+# Loading packages
 ```{r message=FALSE}
 library(tidycensus)
 library(tidyverse)
@@ -17,7 +17,8 @@ library(httr)
 library(knitr)
 ```
 
-# 2. Load household-level data from the 1-year American Community Survey Sample from 2018
+# Loading household-level data from the 1-year American Community Survey Sample from 2018
+
 I want to do a household-level analysis. 
 ```{r}
 household_variable_2018 <- pums_variables %>%
@@ -25,7 +26,8 @@ household_variable_2018 <- pums_variables %>%
   filter(level == "housing", year == 2018, survey == "acs1")
 ```
 
-# 3. Fix connection problem
+# Fixing connection problem
+
 I am constantly getting an error message "Failed to connect to api.census.gov". I have searched online for different methods. This chunk solves my problem.
 ```{r results='hide'}
  set_config(
@@ -34,34 +36,72 @@ I am constantly getting an error message "Failed to connect to api.census.gov". 
  httr::GET("https://www.census.gov/")
 ```
 
-# 4. Choose 5 variables:
-After looking through the variables available in household_variable_2018, I have chosen the following five variables:
+# Choosing 6 variables
 
-     - Food stamp (FS) (categorical)
-     - Laptop (LAPTOP) (categorical)
+After looking through the variables available in household_variable_2018, I have chosen the following six variables:
+
+     - When structure first built (YBL)(categorical)
+     - Household language (HHL) (categorical)
+     - Access to the internet (ACCESS)
      - Household income (HINCP) (continuous)
-     - Number of own children (NOC) (continuous)
+     - First mortgage payment (MRGP) (continuous)
      - Property Value (VALP) (continuous)
      
 I want my sample to include all households in New York State. 
-Through those data, I would like to explore the relationship between household income and property value, number of children, food stamps, and laptop. The following questions can find an answer through this analysis: "Do richer families spend more on housing?", "Do they tend to have more children?", "Does more children means more laptop?", "Is there a correlation between income and food stamp used?", etc.   
+Through those data, I would like to explore the relationship between household income and property value, structure age, mortgage payment, and household language. The following questions can find an answer through this analysis: "Do richer families spend more on housing?", "Do they tend to live in newer structure?", "Do all households use English?", etc.   
 ```{r results= "hide"}
-household_data <- get_pums(variables = c("FS", "LAPTOP", "HINCP", "NOC", "VALP"),
+household_data <- get_pums(variables = c("YBL", "HHL", "ACCESS", "HINCP", "MRGP", "VALP"),
                            state = "NY",
                            year = 2018,
                            survey = "acs1",
                            recode = TRUE) 
 ```
 
-# 5. Select and present columns from household_data dataframe
-This dataset includes 196,967 households. The first ten rows are presented here as a formatted table.
+# Selecting and presenting columns from household_data dataframe
+
+This dataset includes 79,116 households. The first ten rows are presented here as a formatted table.
 ```{r}
-hh_data <- select(household_data, "FS", "LAPTOP", "HINCP", "NOC", "VALP")
-knitr::kable(hh_data[1:10,])
+hh_data <- household_data %>%
+  filter(YBL != "bb",
+         MRGP != 0,
+         ACCESS != "b") %>%
+  mutate(intel_access = case_when(ACCESS == "1"~"TRUE",
+                                  ACCESS == "2"~"TRUE",
+                                  ACCESS == "3"~"FALSE")) %>%
+  mutate(household_language = case_when(HHL == "1"~"English only",
+                                        HHL == "2"~"Spanish",
+                                        HHL == "3"~"Other Indo-European languages",
+                                        HHL == "4"~"Asian and Pacific Island languages",
+                                        HHL == "5"~"Other language")) %>%
+  mutate(bd_year = case_when(YBL == "01"~"Really old",
+                             YBL == "02"~"Really old",
+                             YBL == "03"~"Really old",
+                             YBL == "04"~"Old",
+                             YBL == "05"~"Old",
+                             YBL == "06"~"Old",
+                             YBL == "07"~"Old",
+                             YBL == "08"~"New",
+                             YBL == "09"~"New",
+                             YBL == "10"~"New",
+                             YBL == "11"~"New",
+                             YBL == "12"~"New",
+                             YBL == "13"~"New",
+                             YBL == "14"~"New",
+                             YBL == "15"~"Really new",
+                             YBL == "16"~"Really new",
+                             YBL == "17"~"Really new",
+                             YBL == "18"~"Really new",
+                             YBL == "19"~"Really new",
+                             YBL == "20"~"Really new",
+                             YBL == "21"~"Really new",
+  )) %>%
+  select(bd_year, household_language, intel_access, "HINCP", "MRGP", "VALP")
+
+hh_data
 ```
 
-# 6. Saving data
+# Saving data
 ```{r}
-write_csv(hh_data, "household data_01.csv")
+write_csv(hh_data, "household data_02.csv")
 ```
 
