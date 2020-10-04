@@ -19,9 +19,11 @@ library(ggplot2)
 Loading the household-level dataset from week 2. 
 This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.
 
-the following five variables are included:
+the following six variables are included:
+
      - When structure first built (bd_year)(categorical)
      - Household language (household_language) (categorical)
+     - Access to the internet (intel_access)(categorical)
      - Household income (HINCP) (continuous)
      - First mortgage payment (MRGP) (continuous)
      - Property Value (VALP) (continuous)
