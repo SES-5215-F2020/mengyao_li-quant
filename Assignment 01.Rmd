@@ -42,7 +42,7 @@ After looking through the variables available in household_variable_2018, I have
 
      - When structure first built (YBL)(categorical)
      - Household language (HHL) (categorical)
-     - Access to the internet (ACCESS)
+     - Access to the internet (ACCESS)(categorical)
      - Household income (HINCP) (continuous)
      - First mortgage payment (MRGP) (continuous)
      - Property Value (VALP) (continuous)
