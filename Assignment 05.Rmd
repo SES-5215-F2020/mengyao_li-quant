@@ -1,0 +1,210 @@
+---
+title: "Assignment 05"
+author: "Mengyao"
+date: "2020/10/3"
+output: 
+  html_document:
+    theme: lumen
+    toc: true
+    toc_float: true
+---
+
+# Loading packages
+```{r, message=FALSE}
+library(tidyverse)
+library(jtools)
+library(interactions)
+library(knitr)
+library(huxtable)
+library(ggstance)
+```
+
+# Loading data
+
+Loading the household-level data set from week 3. 
+This is a household-level analysis. The data are collected from the 1-year American Community Survey Sample from 2018 and covered all households in New York that spent money on the first mortgage payment.
+
+the following six variables are included:
+
+     - When structure first built (bd_year)(categorical)
+     - Household language (household_language) (categorical)
+     - Access to the internet (intel_access)(categorical)
+     - Household income (HINCP) (continuous)
+     - First mortgage payment (MRGP) (continuous)
+     - Property Value (VALP) (continuous)
+     
+```{r, message=FALSE}
+household_data_as5 <- read_csv("household data_03.csv")
+```
+
+# Initial regression model
+
+I will do a linear regression predicting property value based on building age, household language, household income and first mortgage payment.
+```{r}
+options(scipen = 999)
+model1 <- lm(VALP ~ bd_year + household_language + intel_access + HINCP + MRGP,
+            data = household_data_as5)
+summary(model1)
+```
+
+# A log transformation
+
+The difference between earning $1,000 per year and $2,000 is probably more substantial than the difference between earning $50,000 per year and $51,000. In the former case, income has increased by 100%, and in the latter, income has increased by 2%. Since the percentage increases are more relevant than absolute increases, I will do a log transformation of my HINCP(Household Income) variable. 
+
+I will first clean my data by filtering out all zeros and negative values for my HINCP variable before the log transformation.
+```{r}
+household_data_as5 <- household_data_as5 %>%
+  filter(HINCP > 0)
+model2 <- lm(VALP ~ bd_year + household_language + intel_access + log(HINCP) + MRGP,
+            data = household_data_as5)
+summary(model2)
+```
+
+When a household's income doubles, the property value increases by about $97736.0 on average, controlling all other variables in the model.
+The R-squared value decreases slightly from 0.3601 to 0.3254. This means that the model fit is a little worse than we had. 
+
+# Converting a continuous variable to a categorical variable
+
+Maybe the first mortgage payment relates to property value, but in more a step-wise way than a linear way. Like, maybe households that have a first mortgage payment less than 2000 are cheap; households that have a first mortgage payment between 2000 and 5000 are of medium price; and households that have a first mortgage payment more than 5000 are expensive. I will convert my continuous variable MRGP (First mortgage payment) into a categorical variable. 
+
+```{r}
+hh_data_as5_02 <- household_data_as5 %>%
+  mutate(mortgage = case_when(MRGP < 2000~"cheap mortgage",
+                              MRGP <= 5000~"medium mortgage",
+                              MRGP > 5000~"expensive mortgage"))
+model3 <- lm(VALP ~ bd_year + household_language + intel_access + HINCP + mortgage,
+            data = hh_data_as5_02)
+summary(model3)
+```
+
+The R-squared value decreases slightly from 0.3601 to 0.335. This means that the model fit is a little worse than we had. 
+
+# Adding an interaction term
+
+Does household income make a bigger difference in property value for building that has internet access than for building without internet access? Are there internet access differences in the effect of household language or structure age on property value?
+```{r}
+model4 <- lm(VALP ~ bd_year + household_language + intel_access + HINCP + MRGP + 
+               bd_year:intel_access + household_language:intel_access + HINCP:intel_access,
+            data = household_data_as5)
+summary(model4)
+```
+The R-squared value increases slightly from 0.3601 to 0.3618. This means that the model fit is a little better than we had. 
+
+The positive and statistically significant coefficient for household income tells us that households with higher incomes have more expensive households. The positive and statistically significant coefficient for the interaction between internet access and household income tells us that income has greater effect on property value for households with internet access than it does for households without internet access.
+
+For the categorical variable of building age, everything is compared to new structures (built between 2000 - 2010; the category isn't shown in the coefficients table). The coefficient estimate for really old structures (built before 1960) is 70111.4458. This means that, on average and controlling for everything else in the model, the property value for really old buildings will be about $70111.45 more than the property value of new structures. 
+
+For the categorical variable of household language, everything is compared to Asian and Pacific Island languages (the category that is not shown in the coefficients table). The coefficient estimate for English only household is -128565.2520. This means that, on average and controlling for everything else in the model, the property value for families that speak English only will be about $128565.25 less than the property value of households that speak Asian and Pacific Island languages.
+
+# Visualizing the results
+
+I will create a graph to compare the R-squared values for all four models.
+```{r}
+ModelFit <- tibble(model = c(1,2,3,4),
+                   R_squared = c(summary(model1)$adj.r.squared,
+                                 summary(model2)$adj.r.squared,
+                                 summary(model3)$adj.r.squared,
+                                 summary(model4)$adj.r.squared))
+
+ggplot(ModelFit,
+       aes(x = model, y = R_squared)) +
+  geom_line() +
+  scale_x_continuous(name = "",
+                     breaks = breaks <- seq(1,4,by=1),
+                     labels = paste("Model", breaks)) +
+  scale_y_continuous(name = "Adjusted R-squared value") +
+  theme_light()
+```
+
+It looks like Model 4 is the best fitting model, although the differences are tiny (notice the range of values on the y-axis). So I will call Model 4 my preferred model.
+
+I will use the export_summs() function to create a nicely-formatted table showing the results of multiple models side-by-side. I am leaving the intercept out of the table because it doesn't tell us anything interesting.
+```{r}
+coeff_names <- c("Household income" = "HINCP",
+                 "First mortgage payment" = "MRGP",
+                 "Internet access\n(compared to no internet access)" = "intel_accessTRUE",
+                 "Old buildings\n(compared to new buildings)" = "bd_yearOld",
+                 "Really old buildings\n(compared to new buildings)" = "bd_yearReally new",
+                 "Really new buildings\n(compared to new buildings)" = "bd_yearReally old",
+                 "English only\n(compared to asian and pacific languages)" = "household_languageEnglish only",
+                 "Indo-European languages\n(compared to asian and pacific languages)" = "household_languageOther Indo-European languages",
+                 "Other languages\n(compared to asian and pacific languages)" = "household_languageOther language",
+                 "Spanish\n(compared to asian and pacific languages)" = "household_languageSpanish",
+                 "Interaction:\ninternet access and structure age" = "bd_yearOld:intel_accessTRUE",
+                 "Interaction:\ninternet access and structure age" = "bd_yearReally new:intel_accessTRUE",
+                 "Interaction:\ninternet access and structure age" = "bd_yearReally old:intel_accessTRUE",
+                 "Interaction:\ninternet access and household language" = "household_languageEnglish only:intel_accessTRUE",
+                 "Interaction:\ninternet access and household language" = "household_languageOther Indo-European languages:intel_accessTRUE",
+                 "Interaction:\ninternet access and household language" = "household_languageOther language:intel_accessTRUE",
+                 "Interaction:\ninternet access and household language" = "household_languageSpanish:intel_accessTRUE",
+                 "Interaction:\ninternet access and household income" = "intel_accessTRUE:HINCP"
+                 )
+
+export_summs(model1, model4,
+             error_format = "(p = {p.value})",
+             error_pos = "same",
+             model.names = c("Initial model", "Preferred model"),
+             coefs = coeff_names)
+```
+
+# Visualizing regression results
+
+I will visualize some of the relationships from my preferred model. Here's a chart showing the 95-percent confidence intervals for the coefficients of each of out model coefficients.
+```{r}
+coeff_desc <- c("Really old structure\n(compared to new structure)" = "bd_yearReally old",
+                "Speaking English only\n(compared to speaking asian and pacific languages)" = "household_languageEnglish only",
+                "Earning one additional dollar" = "HINCP",
+                "Paying one more dollar for first mortgage payment" = "MRGP",
+                "Old structure with internet access" = "bd_yearOld:intel_accessTRUE",
+                "Having internet access AND earning one additional dollar" = "intel_accessTRUE:HINCP")
+
+plot_coefs(model4,
+           coefs = coeff_desc,
+           plot.distributions = TRUE,
+           rescale.distributions = TRUE) +
+  scale_x_continuous(name = "Effect on predicted property value (dollars)")
+```
+
+Here is the predicted relationship between household income (HINCP) and property value, for structures of different internet access, holding all other variables at their means. 
+```{r, warning=FALSE, message=FALSE}
+interact_plot(model4, pred = HINCP, modx = intel_access, interval = TRUE) +
+  scale_x_continuous(name = "Household Income (thousands)",
+                     breaks = breaks <- seq(0, 1750000, by = 175000),
+                     labels = paste("$", prettyNum(breaks/1000, big.mark = ","), sep = "")) +
+  scale_y_continuous(name = "Property Value (thousands)") +
+  scale_color_discrete(name = "") +
+  scale_linetype_discrete(name = "") +
+  scale_fill_discrete(name = "")
+```
+
+Here is the relationship between first mortgage payment (MRGP) and property value, for structures of different internet access, holding all other variables at their means. The lines are parallel because the model didn't include an interaction term between MRGP and internet accessibility.
+```{r, message=FALSE}
+interact_plot(model4, pred = MRGP, modx = intel_access, interval = TRUE) +
+  scale_x_continuous(name = "First Mortgage Payment (dollars)",
+                     breaks = breaks <- seq(0, 7000, by = 700),
+                     labels = paste("$", prettyNum(breaks, big.mark = ","), sep = "")) +
+  scale_y_continuous(name = "Property Value (dollars)") +
+  scale_color_discrete(name = "") +
+  scale_linetype_discrete(name = "") +
+  scale_fill_discrete(name = "")
+```
+
+Here is the relationship between structure age and property value, by internet access, and holding all other variables at their means.  
+```{r, message=FALSE}
+cat_plot(model4, pred = bd_year, modx = intel_access, interval = TRUE) +
+  scale_x_discrete(name = "Structure Age") +
+  scale_y_continuous(name = "Property Value (dollars)") +
+  scale_color_discrete(name = "") + 
+  scale_fill_discrete(name = "")
+```
+
+
+
+
+
+
+
+
+
+
+
