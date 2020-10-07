@@ -140,22 +140,34 @@ coeff_names <- c("Household income" = "HINCP",
                  "Interaction:\ninternet access and household income" = "intel_accessTRUE:HINCP"
                  )
 
-export_summs(model1, model4,
+export_summs(model1, model2, model3, model4,
              error_format = "(p = {p.value})",
              error_pos = "same",
-             model.names = c("Initial model", "Preferred model"),
+             model.names = c("Initial model", "Model2", "Model3", "Preferred model"),
              coefs = coeff_names)
 ```
 
 # Visualizing regression results
 
 I will visualize some of the relationships from my preferred model. Here's a chart showing the 95-percent confidence intervals for the coefficients of each of out model coefficients.
-```{r}
-coeff_desc <- c("Really old structure\n(compared to new structure)" = "bd_yearReally old",
+```{r, fig.width = 8, fig.height=8}
+coeff_desc <- c("Old structure\n(compared to new structure)" = "bd_yearOld",
+                "Really new structure\n(compared to new structure)" = "bd_yearReally new",
+                "Really old structure\n(compared to new structure)" = "bd_yearReally old",
                 "Speaking English only\n(compared to speaking asian and pacific languages)" = "household_languageEnglish only",
+                "Speaking Indo-European languages\n(compared to speaking asian and pacific languages)" = "household_languageOther Indo-European languages",
+                "Speaking other languages\n(compared to speaking asian and pacific languages)" = "household_languageOther language",
+                "Speaking Spanish\n(compared to speaking asian and pacific languages)" = "household_languageSpanish",
+                "Having internet access\n(compared to no internet access)" = "intel_accessTRUE",
                 "Earning one additional dollar" = "HINCP",
                 "Paying one more dollar for first mortgage payment" = "MRGP",
                 "Old structure with internet access" = "bd_yearOld:intel_accessTRUE",
+                "Really new structure with internet access" = "bd_yearReally new:intel_accessTRUE",
+                "Really old structure with internet access" = "bd_yearReally old:intel_accessTRUE",
+                "Speaking English only AND having internet access" = "household_languageEnglish only:intel_accessTRUE",
+                "Speaking Indo-European languages AND having internet access" = "household_languageOther Indo-European languages:intel_accessTRUE",
+                "Speaking other languages AND having internet access" = "household_languageOther language:intel_accessTRUE",
+                "Speaking Spanish AND having internet access" = "household_languageSpanish:intel_accessTRUE",
                 "Having internet access AND earning one additional dollar" = "intel_accessTRUE:HINCP")
 
 plot_coefs(model4,
@@ -171,10 +183,7 @@ interact_plot(model4, pred = HINCP, modx = intel_access, interval = TRUE) +
   scale_x_continuous(name = "Household Income (thousands)",
                      breaks = breaks <- seq(0, 1750000, by = 175000),
                      labels = paste("$", prettyNum(breaks/1000, big.mark = ","), sep = "")) +
-  scale_y_continuous(name = "Property Value (thousands)") +
-  scale_color_discrete(name = "") +
-  scale_linetype_discrete(name = "") +
-  scale_fill_discrete(name = "")
+  scale_y_continuous(name = "Property Value (dollars)")
 ```
 
 Here is the relationship between first mortgage payment (MRGP) and property value, for structures of different internet access, holding all other variables at their means. The lines are parallel because the model didn't include an interaction term between MRGP and internet accessibility.
@@ -183,10 +192,7 @@ interact_plot(model4, pred = MRGP, modx = intel_access, interval = TRUE) +
   scale_x_continuous(name = "First Mortgage Payment (dollars)",
                      breaks = breaks <- seq(0, 7000, by = 700),
                      labels = paste("$", prettyNum(breaks, big.mark = ","), sep = "")) +
-  scale_y_continuous(name = "Property Value (dollars)") +
-  scale_color_discrete(name = "") +
-  scale_linetype_discrete(name = "") +
-  scale_fill_discrete(name = "")
+  scale_y_continuous(name = "Property Value (dollars)")
 ```
 
 Here is the relationship between structure age and property value, by internet access, and holding all other variables at their means.  
@@ -194,8 +200,10 @@ Here is the relationship between structure age and property value, by internet a
 cat_plot(model4, pred = bd_year, modx = intel_access, interval = TRUE) +
   scale_x_discrete(name = "Structure Age") +
   scale_y_continuous(name = "Property Value (dollars)") +
-  scale_color_discrete(name = "") + 
-  scale_fill_discrete(name = "")
+  scale_color_discrete(name = "Internet access",
+                       labels = c("With internet access", "Without internet access")) + 
+  scale_fill_discrete(name = "Internet access",
+                      labels = c("With internet access", "Without internet access"))
 ```
 
 
